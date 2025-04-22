@@ -3,4 +3,4 @@ project(cpp)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(cpp main.cpp)
+add_executable(cpp main.cpp template/linklist/diff.h template/linklist/NumArrays.h)

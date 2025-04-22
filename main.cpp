@@ -294,6 +294,24 @@ public:
     return min_dummy_head->next;
   }
 
+  // 删除链表的倒数第 N 个结点: https://leetcode.cn/problems/remove-nth-node-from-end-of-list/description/
+  ListNode* removeNthFromEnd(ListNode* head, int n) {
+    ListNode* dummy = new ListNode(0, head);
+    ListNode* first = head;
+    ListNode* second = dummy;
+    for (int i = 0; i < n; ++i) {
+      first = first->next;
+    }
+    while (first) {
+      first = first->next;
+      second = second->next;
+    }
+    second->next = second->next->next;
+    ListNode* ans = dummy->next;
+    delete dummy;
+    return ans;
+  }
+
   int maxSubArray(vector<int>& nums) {
     int min = nums[0];
     int max = 0;
@@ -338,11 +356,60 @@ public:
 //    }
 //    return dp[neg];
 //  }
+
+  // 删除有序数组中的重复项: https://leetcode.cn/problems/remove-duplicates-from-sorted-array/description/
+  int removeDuplicates(vector<int>& nums) {
+    if (nums.size() == 0) {
+      return 0;
+    }
+    int prenums = nums[0];
+    int slow = 0;
+    for (int fast = 1; fast < nums.size(); ++fast) {
+      if (nums[fast] != prenums) {
+        prenums = nums[fast];
+        nums[++slow] = nums[fast];
+      }
+    }
+    return slow + 1;
+  }
+
+  // 移除元素：https://leetcode.cn/problems/remove-element/
+  int removeElement(vector<int>& nums, int val) {
+    int slow = 0, fast = 0;
+    while (fast < nums.size()) {
+      if (nums[fast] != val) {
+        nums[slow] = nums[fast];
+        ++slow;
+      }
+      ++fast;
+    }
+
+    return slow;
+  }
+
+  // 两数之和 II - 输入有序数组: https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/description/
+  vector<int> twoSum(vector<int>& numbers, int target) {
+    int head = 0; int tail = numbers.size() - 1;
+    while (head != tail) {
+      if (numbers[head] + numbers[tail] > target) {
+        --tail;
+        continue;
+      } else if (numbers[head] + numbers[tail] < target) {
+        ++head;
+        continue;
+      } else {
+        break;
+      }
+    }
+    return {head, tail};
+  }
 };
 
 int main() {
   Solution* solution = new Solution();
-  vector<int> nums = {-1};
-  //cout << solution->subSolution(nums, 1, 0);
-  cout << solution->findTargetSumWays(nums, 1);
+  vector<int> nums = {0,1,2,2,3,0,4,2};
+  cout << solution->removeElement(nums, 2) << endl;
+  for (int num : nums) {
+    cout << num << " ";
+  }
 }
