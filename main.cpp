@@ -199,6 +199,7 @@ public:
     }
     return std::max(result, end - start);
   }
+
   // https://leetcode.cn/problems/reverse-linked-list/
   ListNode* reverseList(ListNode* head) {
     ListNode* curr = head;
@@ -211,6 +212,15 @@ public:
     }
     return prev;
   }
+//  ListNode* reverseList(ListNode* node) {
+//    if (node == nullptr || node->next == nullptr) {
+//      return node;
+//    }
+//    ListNode* newHead = reverseList(node->next);
+//    node->next->next == node;
+//    node->next = nullptr;
+//    return newHead;
+//  }
 
   // 合并有序链表：https://leetcode.cn/problems/merge-two-sorted-lists/description/
   ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
@@ -313,15 +323,13 @@ public:
   }
 
   int maxSubArray(vector<int>& nums) {
-    int min = nums[0];
-    int max = 0;
-    int sum = 0;
+    int pre = 0;
+    int ans = nums[0];
     for (int num : nums) {
-      sum += num;
-      min = std::min(min, sum);
-      max = std::max(max, sum);
+      pre = max(pre + num, num);
+      ans = max(ans, pre);
     }
-    return min < 0 ? max - min : max;
+    return ans;
   }
 
   // 目标和：https://leetcode.cn/problems/target-sum/description/?envType=problem-list-v2&envId=dynamic-programming
@@ -405,11 +413,270 @@ public:
   }
 };
 
-int main() {
-  Solution* solution = new Solution();
-  vector<int> nums = {0,1,2,2,3,0,4,2};
-  cout << solution->removeElement(nums, 2) << endl;
-  for (int num : nums) {
-    cout << num << " ";
+std::string formatTimestamp(int64_t microseconds_since_epoch) {
+  // 微秒转秒和纳秒
+  std::time_t seconds = microseconds_since_epoch / 1'000'000;
+  int microseconds = microseconds_since_epoch % 1'000'000;
+
+  // 使用 std::tm 表示本地时间
+  std::tm local_tm;
+#ifdef _WIN32
+  localtime_s(&local_tm, &seconds);
+#else
+  localtime_r(&seconds, &local_tm);
+#endif
+
+  // 获取时区偏移
+  std::ostringstream offset_stream;
+  std::time_t utc_seconds = seconds;
+  std::tm gmt_tm;
+#ifdef _WIN32
+  gmtime_s(&gmt_tm, &utc_seconds);
+#else
+  gmtime_r(&utc_seconds, &gmt_tm);
+#endif
+  int offset_sec = static_cast<int>(std::difftime(std::mktime(&local_tm), std::mktime(&gmt_tm)));
+
+  int offset_hours = offset_sec / 3600;
+  int offset_minutes = std::abs((offset_sec % 3600) / 60);
+
+  char sign = offset_sec >= 0 ? '+' : '-';
+
+  // 格式化时间戳
+  std::ostringstream ss;
+  ss << std::put_time(&local_tm, "%Y-%m-%dT%H:%M:%S");
+  ss << sign << std::setw(2) << std::setfill('0') << std::abs(offset_hours)
+     << ":" << std::setw(2) << std::setfill('0') << offset_minutes;
+
+  return ss.str();
+}
+
+int getMaxConccurrency(int candidate, int factor, int quota) {
+  std::vector<int> vec(candidate, 0);
+  int result = 0;
+  bool canstop = false;
+  while (true) {
+    for (int i = 0; i < factor; ++i) {
+      if (vec.at(i) < quota) {
+        vec[i]++;
+      } else {
+        cout << "failed to allow quota at " << i << endl;
+        canstop = true;
+        break;
+      }
+    }
+    if (canstop) {
+      break;
+    }
+    ++result;
+    std::sort(vec.begin(), vec.end());
   }
+  return result;
+}
+
+void maxHeapify(vector<int>& nums, int node, int heapSize) {
+  int length = node * 2 + 1;
+  int right = node * 2 + 2;
+  int large = node;
+  if (length < heapSize && nums[length] > nums[large]) {
+    large = length;
+  }
+  if (right < heapSize && nums[right] > nums[large]) {
+    large = right;
+  }
+  if (large != node) {
+    swap(nums[node], nums[large]);
+    maxHeapify(nums, large, heapSize);
+  }
+}
+
+void buildMaxHeap(vector<int>& nums, int heapSize) {
+  for (int i = heapSize / 2 - 1; i >= 0; --i) {
+    maxHeapify(nums, i, heapSize);
+  }
+}
+
+int findKthLargest(vector<int>& nums, int k) {
+  int heapSize = nums.size();
+  buildMaxHeap(nums, heapSize);
+  for (int i = nums.size() - 1; i >= nums.size() - k + 1; --i) {
+    swap(nums[0], nums[i]);
+    --heapSize;
+    maxHeapify(nums, 0, heapSize);
+  }
+  return nums[0];
+}
+
+vector<vector<int>> threeSum(vector<int>& nums) {
+  int length = nums.size();
+  std::sort(nums.begin(), nums.end());
+  vector<vector<int>> ans;
+  for (int first = 0; first < length; ++first) {
+    if (first > 0 && nums[first] == nums[first - 1]) {
+      continue;
+    }
+    int target = -nums[first];
+    int third = length - 1;
+    for (int second = first + 1; second < length; ++second) {
+      if (second > first + 1 && nums[second] == nums[second - 1]) {
+        continue;
+      }
+      while (second < third && nums[second] + nums[third] > target) {
+        --third;
+      }
+      if (second == third) {
+        break;
+      }
+      if (nums[first] + nums[second] + nums[third] == 0) {
+        vector<int> result = vector<int>{nums[first], nums[second], nums[third]};
+        ans.emplace_back(result);
+      }
+    }
+  }
+  return ans;
+}
+
+int partition(vector<int>& nums, int left, int right) {
+  int privot = nums[right];
+  int i = left - 1;
+  for (int curr = left; curr < right; ++curr) {
+    if (nums[curr] < privot) {
+      i = i + 1;
+      swap(nums[curr], nums[i]);
+    }
+  }
+  swap(nums[right], nums[i + 1]);
+  return i + 1;
+}
+
+void quickSort(vector<int>& nums, int left, int right) {
+  if (left < right) {
+    int privot = partition(nums, left, right);
+    quickSort(nums, left, privot - 1);
+    quickSort(nums, privot + 1, right);
+  }
+}
+
+
+//Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
+
+vector<vector<int>> levelOrder(TreeNode* root) {
+  vector<vector<int>> ans;
+  if (root == nullptr) {
+    return ans;
+  }
+  queue<TreeNode*> queue;
+  queue.push(root);
+  while (!queue.empty()) {
+    vector<int> res;
+    int levelSize = queue.size();
+    res.reserve(levelSize);
+    while (levelSize-- > 0) {
+      TreeNode* curr = queue.front();
+      queue.pop();
+      if (curr->left != nullptr) {
+        queue.push(curr->left);
+      }
+      if (curr->right != nullptr) {
+        queue.push(curr->right);
+      }
+      res.push_back(curr->val);
+    }
+    ans.push_back(res);
+  }
+  return ans;
+}
+
+int search(vector<int>& nums, int target) {
+  int step = 0;
+  int bound = 0;
+  if (nums[0] > target) {
+    bound = nums.size() - 1;
+    step = -1;
+  } else {
+    step = 1;
+    bound = 0;
+  }
+  while (bound >= 0 && bound < nums.size() && nums[bound] != target) {
+    bound += step;
+  }
+  return nums[bound] == target ? bound : -1;
+}
+
+void dfs(vector<vector<char>>& grid, int row, int col) {
+  int nr = grid.size();
+  int nc = grid[0].size();
+  grid[row][col] = '0';
+  if (row - 1 >= 0 && grid[row - 1][col] == '1') dfs(grid, row - 1, col);
+  if (row + 1 < nr && grid[row + 1][col] == '1') dfs(grid, row - 1, col);
+  if (col - 1 >= 0 && grid[row][col - 1] == '1') dfs(grid, row - 1, col);
+  if (col + 1 < nc && grid[row][col + 1] == '1') dfs(grid, row - 1, col);
+}
+
+int numIslands(vector<vector<char>>& grid) {
+  int row = grid.size();
+  if (row == 0) {
+    return 0;
+  }
+  int land_num = 0;
+  int col = grid[0].size();
+  for (int i = 0; i < row; ++i) {
+    for (int j = 0; j < col; ++j) {
+      if (grid.at(i).at(j) == '1') {
+        ++land_num;
+        dfs(grid, i, j);
+      }
+    }
+  }
+  return land_num;
+}
+
+void backtrace(vector<vector<int>> res, vector<int>& nums, int first, int length) {
+  if (first == length) {
+    res.push_back(nums);
+    return;
+  }
+  for (int i = first; i < length; ++i) {
+    swap(nums[i], nums[first]);
+    backtrace(res, nums, first + 1, length);
+    swap(nums[i], nums[first]);
+  }
+}
+
+vector<vector<int>> permute(vector<int>& nums) {
+  vector<vector<int>> ans;
+  backtrace(ans, nums, 0, (int)nums.size());
+  return ans;
+}
+
+int maxProfit(vector<int>& prices) {
+  vector<int> cheapest;
+  cheapest.reserve(prices.size());
+
+  cheapest.push_back(prices.at(0));
+  for (int i = 1; i < prices.size(); ++i) {
+    cheapest.push_back(min(cheapest[i - 1], prices.at(i)));
+  }
+
+  int ans = 0;
+  for (int i = 0; i < prices.size(); ++i) {
+    ans = max(prices.at(i) - cheapest.at(i), ans);
+  }
+  return ans;
+}
+
+int main() {
+  vector<int> nums = {7,1,5,3,6,4};
+
+  cout << maxProfit(nums) << endl;
+  return 0;
 }
