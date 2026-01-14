@@ -10,78 +10,174 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-struct DNode {
-  int key_;
-  int value_;
-  DNode* prev_;
-  DNode* next_;
-
-  DNode()
-    : key_(0), value_(0), prev_(nullptr), next_(nullptr) {}
-  DNode(int key, int value)
-      :  key_(key), value_(value), prev_(nullptr), next_(nullptr) {}
-  DNode(int key, int value, DNode* prev, DNode* next)
-    : key_(key), value_(value), prev_(prev), next_(next) {}
-  ~DNode() {}
-};
-
+//struct DNode {
+//  int key_;
+//  int value_;
+//  DNode* prev_;
+//  DNode* next_;
+//
+//  DNode()
+//    : key_(0), value_(0), prev_(nullptr), next_(nullptr) {}
+//  DNode(int key, int value)
+//      :  key_(key), value_(value), prev_(nullptr), next_(nullptr) {}
+//  DNode(int key, int value, DNode* prev, DNode* next)
+//    : key_(key), value_(value), prev_(prev), next_(next) {}
+//  ~DNode() {}
+//};
+//
+//class LRUCache {
+//public:
+//  LRUCache(int capacity) {
+//    head_ = new DNode();
+//    tail_ = new DNode();
+//    size_ = capacity;
+//    head_->next_ = tail_;
+//    tail_->prev_ = head_;
+//  }
+//
+//  int get(int key) {
+//    if (cache_.count(key)) {
+//      DNode* node = cache_[key];
+//      moveToHead(node);
+//      return node->value_;
+//    } else {
+//      return -1;
+//    }
+//  }
+//
+//  void put(int key, int value) {
+//    if (cache_.count(key)) {
+//      DNode* node = cache_[key];
+//      node->value_ = value;
+//      moveToHead(node);
+//    } else {
+//      DNode* node = new DNode(key, value);
+//      cache_.insert(std::make_pair(key, node));
+//      addToHead(node);
+//      if (cache_.size() > size_) {
+//        DNode* tail_node = tail_->prev_;
+//        cache_.erase(tail_node->key_);
+//        removeNode(tail_node);
+//        delete tail_node;
+//      }
+//    }
+//  }
+//
+//  void moveToHead(DNode* node) {
+//    removeNode(node);
+//    addToHead(node);
+//  }
+//  void addToHead(DNode* node) {
+//    node->next_ = head_->next_;
+//    node->prev_ = head_;
+//    head_->next_->prev_ = node;
+//    head_->next_ = node;
+//  }
+//  void removeNode(DNode* node) {
+//    node->prev_->next_ = node->next_;
+//    node->next_->prev_ = node->prev_;
+//  }
+//private:
+//  DNode* head_;
+//  DNode* tail_;
+//  int size_;
+//  std::unordered_map<int, DNode*> cache_;
+//};
+//
 class LRUCache {
+  struct Node {
+    public:
+    Node() {
+      // might think duplicate
+      prev_ = nullptr;
+      next_ = nullptr;
+      key_ = 0;
+      value_ = 0;
+    }
+    Node(int key, int value) {
+      prev_ = nullptr;
+      next_ = nullptr;
+      key_ = key;
+      value_ = value;
+    }
+    Node* prev_;
+    Node* next_;
+    int key_;
+    int value_;
+  };
 public:
   LRUCache(int capacity) {
-    head_ = new DNode();
-    tail_ = new DNode();
     size_ = capacity;
+    cache_.reserve(capacity);
+    head_ = new Node();
+    tail_ = new Node();
     head_->next_ = tail_;
     tail_->prev_ = head_;
   }
 
+  ~LRUCache() {
+    Node* cur = head_;
+    while (cur) {
+      Node* next = cur->next_;
+      delete cur;
+      cur = next;
+    }
+  }
+
   int get(int key) {
-    if (cache_.count(key)) {
-      DNode* node = cache_[key];
-      moveToHead(node);
-      return node->value_;
-    } else {
+    if (cache_.count(key) == 0) {
       return -1;
+    } else {
+      Node* node = cache_[key];
+      moveToHead(node);
+      return cache_[key]->value_;
     }
   }
 
   void put(int key, int value) {
-    if (cache_.count(key)) {
-      DNode* node = cache_[key];
-      node->value_ = value;
-      moveToHead(node);
-    } else {
-      DNode* node = new DNode(key, value);
-      cache_.insert(std::make_pair(key, node));
-      addToHead(node);
+    if (cache_.count(key) == 0) {
+      Node* newNode = new Node(key, value);
+      cache_.insert(std::make_pair(key, newNode));
+      addToHead(newNode);
       if (cache_.size() > size_) {
-        DNode* tail_node = tail_->prev_;
-        cache_.erase(tail_node->key_);
-        removeNode(tail_node);
-        delete tail_node;
+        Node* expireNode = removeTail();
+        cache_.erase(expireNode->key_);
+        delete expireNode;
       }
+    } else {
+      Node* current = cache_[key];
+      current->value_ = value;
+      moveToHead(current);
     }
   }
 
-  void moveToHead(DNode* node) {
+  Node* removeTail() {
+    return removeNode(tail_->prev_);
+  }
+
+  void moveToHead(Node* node) {
     removeNode(node);
     addToHead(node);
   }
-  void addToHead(DNode* node) {
-    node->next_ = head_->next_;
-    node->prev_ = head_;
-    head_->next_->prev_ = node;
-    head_->next_ = node;
-  }
-  void removeNode(DNode* node) {
-    node->prev_->next_ = node->next_;
+
+  Node* removeNode(Node* node) {
+    node-> prev_->next_ = node->next_;
     node->next_->prev_ = node->prev_;
+    return node;
   }
+
+  void addToHead(Node* node) {
+    node->next_ = head_->next_;
+    head_->next_ = node;
+    node->prev_ = head_;
+    node->next_->prev_ = node;
+  }
+
 private:
-  DNode* head_;
-  DNode* tail_;
+  Node* head_;
+  Node* tail_;
   int size_;
-  std::unordered_map<int, DNode*> cache_;
+  unordered_map<int, Node*> cache_;
 };
 
 // 区域和检索 - 数组不可变（前缀和）:https://leetcode.cn/problems/range-sum-query-immutable/description/
@@ -167,33 +263,43 @@ private:
   vector<int> different_;
 };
 
-
-/**
- * Your LRUCache object will be instantiated and called as such:
- * LRUCache* obj = new LRUCache(capacity);
- * int param_1 = obj->get(key);
- * obj->put(key,value);
- */
-
-
 class Solution {
 public:
   Solution() {}
   ~Solution() {}
   // https://leetcode.cn/problems/longest-substring-without-repeating-characters/description/
+//  int lengthOfLongestSubstring(string s) {
+//    int start = 0;
+//    int end = 0;
+//    int result = 1;
+//    std::set<char> ch_set;
+//    for (int i = 0; i < s.length();) {
+//      if (ch_set.count(s.at(i)) == 0) {
+//        ++end;
+//        ch_set.insert(s.at(i));
+//        ++i;
+//      } else {
+//        result = std::max(result, end - start);
+//        ch_set.erase(s.at(start));
+//        ++start;
+//      }
+//    }
+//    return std::max(result, end - start);
+//  }
+
   int lengthOfLongestSubstring(string s) {
     int start = 0;
     int end = 0;
-    int result = 1;
+    int length = s.length();
+    int result = 0;
     std::set<char> ch_set;
-    for (int i = 0; i < s.length();) {
-      if (ch_set.count(s.at(i)) == 0) {
+    for (end = 0; end < length;) {
+      if (ch_set.count(s.at(end)) == 0) {
+        ch_set.insert(s.at(end));
         ++end;
-        ch_set.insert(s.at(i));
-        ++i;
       } else {
-        result = std::max(result, end - start);
         ch_set.erase(s.at(start));
+        result = std::max(end - start, result);
         ++start;
       }
     }
@@ -201,16 +307,25 @@ public:
   }
 
   // https://leetcode.cn/problems/reverse-linked-list/
-  ListNode* reverseList(ListNode* head) {
-    ListNode* curr = head;
-    ListNode* prev = nullptr;
-    while (curr) {
-      ListNode* next = curr->next;
-      curr->next = prev;
-      prev = curr;
-      curr = next;
+//  ListNode* reverseList(ListNode* head) {
+//    ListNode* curr = head;
+//    ListNode* prev = nullptr;
+//    while (curr) {
+//      ListNode* next = curr->next;
+//      curr->next = prev;
+//      prev = curr;
+//      curr = next;
+//    }
+//    return prev;
+//  }
+  ListNode* reverseList(ListNode* node) {
+    if (node == nullptr || node->next == nullptr) {
+      return node;
     }
-    return prev;
+    ListNode* newHead = reverseList(node->next);
+    node->next->next = node;
+    node->next = nullptr;
+    return newHead;
   }
 //  ListNode* reverseList(ListNode* node) {
 //    if (node == nullptr || node->next == nullptr) {
@@ -674,9 +789,34 @@ int maxProfit(vector<int>& prices) {
   return ans;
 }
 
-int main() {
-  vector<int> nums = {7,1,5,3,6,4};
+void bubbleSort(int arr[], int n) {
+  for(int i = 0; i < n - 1; ++i) {
+    // 提前退出标志，如果本轮没有发生交换，就说明已经有序
+    bool swapped = false;
+    for(int j = 0; j < n - 1 - i; ++j) {
+      if(arr[j] > arr[j + 1]) {
+        // 交换相邻元素
+        std::swap(arr[j], arr[j + 1]);
+        swapped = true;
+      }
+    }
+    if(!swapped) break; // 已经有序，提前退出
+  }
+}
 
-  cout << maxProfit(nums) << endl;
+void printMetrics(int nums[3][3]) {
+  int row = 3;
+  int col = 3;
+  for (int i = 0; i < row; ++i) {
+    for (int j = 0; j < col; ++j) {
+      cout << nums[i][j] << " ";
+    }
+    cout << endl;
+  }
+}
+
+int main() {
+  int nums[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
+  printMetrics(nums);
   return 0;
 }

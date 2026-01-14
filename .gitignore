@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+
+# Build
+build/
+target/
+out/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Temp
+*.swp
+
