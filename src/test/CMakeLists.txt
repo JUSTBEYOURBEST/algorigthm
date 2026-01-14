@@ -8,11 +8,19 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(googletest)
 
+FetchContent_Declare(
+        glog
+        GIT_REPOSITORY https://github.com/google/glog.git
+        GIT_TAG v0.6.0
+)
+
+# 禁用 glog 的测试，避免与 googletest 冲突
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(glog)
+
 function(add_algorithm_test test_source)
-    # 取文件名（不含路径、不含后缀）
     get_filename_component(test_name ${test_source} NAME_WE)
 
-    # 拼接最终可执行文件名
     set(target_name algorithm_${test_name})
 
     add_executable(${target_name}
@@ -24,6 +32,7 @@ function(add_algorithm_test test_source)
             algorithm_lib
             GTest::gtest
             GTest::gtest_main
+            glog::glog
     )
 
     include(GoogleTest)
