@@ -40,3 +40,4 @@ function(add_algorithm_test test_source)
 endfunction()
 
 add_algorithm_test(diff_test.cc)
+add_algorithm_test(string_test.cc)

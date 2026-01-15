@@ -5,7 +5,7 @@
 #include "data_struct/linklist/diff.h"
 
 namespace algorithm {
-
+namespace test {
 TEST(DiffTest, Basic) {
   LOG(INFO) << "Starting Basic test";
 
@@ -70,4 +70,5 @@ TEST(DiffTest, EdgeCases) {
   LOG(INFO) << "EdgeCases test passed";
 }
 
+} // namespace test
 } // namespace algorithm
