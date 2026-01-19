@@ -1,12 +1,9 @@
 //
 // Created by sccloud on 4/21/25.
 //
-
-#ifndef CPP_NUMARRAYS_H
-#define CPP_NUMARRAYS_H
-
-
 #include <vector>
+
+namespace algorithm {
 
 class NumArray {
   // 前缀和数组
@@ -29,5 +26,5 @@ public:
   }
 };
 
+} // namespace algorithm
 
-#endif //CPP_NUMARRAYS_H

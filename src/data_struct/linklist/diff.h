@@ -3,16 +3,14 @@
 //
 #include <bits/stdc++.h>
 
-using namespace std;
-#ifndef CPP_DIFF_H
-#define CPP_DIFF_H
+namespace algorithm {
 
 class Difference {
   // 差分数组
-  vector<int> diff;
+  std::vector<int> diff;
 
 public:
-  Difference(const vector<int>& nums) {
+  Difference(const std::vector<int>& nums) {
     assert(!nums.empty());
     diff.resize(nums.size());
     // 构造差分数组
@@ -30,8 +28,8 @@ public:
     }
   }
 
-  vector<int> result() {
-    vector<int> res(diff.size());
+  std::vector<int> result() {
+    std::vector<int> res(diff.size());
     // 根据差分数组构造结果数组
     res[0] = diff[0];
     for (size_t i = 1; i < diff.size(); ++i) {
@@ -41,4 +39,4 @@ public:
   }
 };
 
-#endif //CPP_DIFF_H
+}// namespace algorithm

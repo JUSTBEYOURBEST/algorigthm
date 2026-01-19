@@ -41,3 +41,6 @@ endfunction()
 
 add_algorithm_test(diff_test.cc)
 add_algorithm_test(string_test.cc)
+add_algorithm_test(comprehensive_test.cc)
+add_algorithm_test(graph_test.cc)
+add_algorithm_test(link_list_test.cc)

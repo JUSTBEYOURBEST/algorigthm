@@ -2,18 +2,18 @@
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #include <gtest/gtest.h>
 #include <set>
+#include <algorithm>
+#include <vector>
+#include <cassert>
 
 namespace algorithm {
 namespace test {
 
-int lengthOfLongestSubstring(const std::string& s) {
-  if (s.empty()) {
-    return 0;
-  }
+int lengthOfLongestSubstring(std::string s) {
   std::set<char> char_set;
   int left = 0;
   int right = 0;
-  int length = s.size();
+  int length = s.length();
   int ans = 0;
   for (right = 0; right < length;) {
     if (char_set.count(s[right]) > 0) {
@@ -26,7 +26,7 @@ int lengthOfLongestSubstring(const std::string& s) {
       ++right;
     }
   }
-  return std::max(ans, right - left + 1);
+  return std::max(ans, right - left);
 }
 
 // https://leetcode.cn/problems/longest-substring-without-repeating-characters/description/

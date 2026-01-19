@@ -9,10 +9,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
-add_library(algorithm_lib INTERFACE)
+add_library(algorithm_lib
+        src/data_struct/utils/util.cc
+)
 
 target_include_directories(algorithm_lib
-        INTERFACE
+        PUBLIC
         ${PROJECT_SOURCE_DIR}/src
 )
 
